@@ -1,10 +1,10 @@
 # Esperlight
 
-This repo contains simple scripts to get up and running on a new video dataset.  The idea here is to depend only on our basic Esper-ecosystem tools: vgrid, rekall, etc.  and otherwise exchange data between these tools in simple formats like json.
+This repo contains simple scripts to get up and running on a new video dataset.  The idea here is to provide a minimal set of functionality that depends only on our basic Esper-ecosystem tools: vgrid, rekall, etc. and to exchange data between these tools in simple formats like json.
 
 # Generating video metadata
 
-The first step in getting a video dataset ready for manipulation is to produce a list of videos in the collection.  This list will contain metadata about videos that is needed for visualization purposes.  Esperlight contains a script `create_video_metadata.py` that generates this list from a directory of videos.  For example, if you have a directory of `.mp4` videos named `VIDEO_SOURCE_DIR`, the following command line generates a json file that contains basic information about all the videos (height, width, fps, duration, etc.)
+The first step in getting a video dataset ready for manipulation is to produce a list of videos in the collection.  This list will contain metadata about videos that is needed for visualization purposes.  The Esperlight script `create_video_metadata.py` generates this list from a directory of videos.  For example, if you have a directory of `.mp4` videos named `VIDEO_SOURCE_DIR`, the following command line generates a json file that contains basic information about all the videos (height, width, fps, duration, etc.)
 
     python create_video_metadata.py VIDEO_SOURCE_DIR myvideolist.json --suffix mp4
 
