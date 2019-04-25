@@ -15,3 +15,5 @@ As an example, running [`create_video_metadata.py`](view_collection.ipynb) on th
 # Visualizing a collection of videos
 
 Now let's take a look at all the videos. Take a look at the notebook [`view_collection.ipynb`](view_collection.ipynb) for a demonstration of how to read the video metafile file, and use the [Vgrid](https://github.com/scanner-research/vgrid) widget to display the videos.  
+
+Note that running this notebook depends on rekall, vgrid, and vgrid_jupyter.
