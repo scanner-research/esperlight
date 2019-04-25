@@ -10,8 +10,8 @@ The first step in getting a video dataset ready for manipulation is to produce a
 
 _At the moment, `create_video_metadata.py` does not support recursive search of the source directory tree.  This would be a reasonable addition in the future since I expect that many datasets we download from the internet will have subdirectory structure._
 
-As an example, running `create_video_metadata.py` on the directory of videos containing the [__kayvon10__](https://olimar.stanford.edu/hdd/kayvon10/) dataset, yields the video metadata file you see here: <https://olimar.stanford.edu/hdd/kayvon10/kayvon10.json>
+As an example, running [`create_video_metadata.py`](view_collection.ipynb) on the directory of videos containing the [__kayvon10__](https://olimar.stanford.edu/hdd/kayvon10/) dataset, yields the video metadata file you see here: <https://olimar.stanford.edu/hdd/kayvon10/kayvon10.json>
 
-# Visualizing the videos
+# Visualizing a collection of videos
 
-__TODO: ask Dan to point to his notebook here.__ 
+Now let's take a look at all the videos. Take a look at the notebook ['view_collection.ipynb'](view_collection.ipynb) for a demonstration of how to read the video metafile file, and use the [Vgrid](https://github.com/scanner-research/vgrid) widget to display the videos.  
