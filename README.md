@@ -10,7 +10,7 @@ The first step in getting a video dataset ready for manipulation is to produce a
 
 _At the moment, `create_video_metadata.py` does not support recursive search of the directory tree.  This would be a reasonable addition in the future since I expect that many datasets we download from the internet will have subdirectory structure._
 
-As an example, running `create_video_metadata.py` on the directory of videos containing the __kayvon10__ dataset, yields the video metadata file you see here: <https://olimar.stanford.edu/hdd/kayvon10/kayvon10.json>
+As an example, running `create_video_metadata.py` on the directory of videos containing the [__kayvon10__](https://olimar.stanford.edu/hdd/kayvon10/) dataset, yields the video metadata file you see here: <https://olimar.stanford.edu/hdd/kayvon10/kayvon10.json>
 
 # Visualizing the videos
 
