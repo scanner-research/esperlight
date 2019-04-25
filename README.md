@@ -4,7 +4,7 @@ This repo contains simple scripts to get up and running on a new video dataset. 
 
 # Generating video metadata
 
-The first step in getting a video dataset ready for manipulation is to produce a list of videos in the collection.  This list will contain metadata about videos that is needed for visualization purposes.  Esperlight contains a script `create_video_metadata.py` that generates this list from a directory of videos.  For example, if you have a directory of `.mp4` videos named `VIDEO_SOURCE_DIR`, the following command line generates a json file that contains basic information about all the videos (height, width, fps, duration, ect.)
+The first step in getting a video dataset ready for manipulation is to produce a list of videos in the collection.  This list will contain metadata about videos that is needed for visualization purposes.  Esperlight contains a script `create_video_metadata.py` that generates this list from a directory of videos.  For example, if you have a directory of `.mp4` videos named `VIDEO_SOURCE_DIR`, the following command line generates a json file that contains basic information about all the videos (height, width, fps, duration, etc.)
 
     python create_video_metadata.py VIDEO_SOURCE_DIR myvideolist.json --suffix mp4
 
