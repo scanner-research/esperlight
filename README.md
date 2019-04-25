@@ -8,9 +8,9 @@ The first step in getting a video dataset ready for manipulation is to produce a
 
     python create_video_metadata.py VIDEO_SOURCE_DIR myvideolist.json --suffix mp4
 
-At the moment, `create_video_metadata.py` does not support recursive search of the directory tree.  This would be a reasonable addition, in the future.
+_At the moment, `create_video_metadata.py` does not support recursive search of the directory tree.  This would be a reasonable addition in the future since some datasets we download from the internet have directory structure._
 
-For example, running `create_video_metadata.py` on the directory of videos containing the __kayvon10__ dataset, yields the video metadata file you see here: <https://olimar.stanford.edu/hdd/kayvon10/kayvon10.json>
+As an example, running `create_video_metadata.py` on the directory of videos containing the __kayvon10__ dataset, yields the video metadata file you see here: <https://olimar.stanford.edu/hdd/kayvon10/kayvon10.json>
 
 # Visualizing the videos
 
