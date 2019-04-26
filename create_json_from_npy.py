@@ -55,12 +55,12 @@ for video_name in tqdm(video_list):
         curr_dict["frame"] = idx
         curr_dict["bboxes"] = []
         for jdx in range(len(data[idx][bbox_idx])):
-            curr_bbox = {"x1": (data[idx][bbox_idx][jdx][x1_idx]),
-                            "y1": (data[idx][bbox_idx][jdx][y1_idx]),
-                            "x2": (data[idx][bbox_idx][jdx][x2_idx]),
-                            "y2": (data[idx][bbox_idx][jdx][y2_idx]),
+            curr_bbox = {"x1": float(data[idx][bbox_idx][jdx][x1_idx]),
+                            "y1": float(data[idx][bbox_idx][jdx][y1_idx]),
+                            "x2": float(data[idx][bbox_idx][jdx][x2_idx]),
+                            "y2": float(data[idx][bbox_idx][jdx][y2_idx]),
                             "class": str(id2name[data[idx][class_idx][jdx] - 1]),
-                            "score": (data[idx][score_idx][jdx])
+                            "score": float(data[idx][score_idx][jdx])
                             }
             curr_dict["bboxes"].append(curr_bbox)
         json_obj.append(curr_dict)
