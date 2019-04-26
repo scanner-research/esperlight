@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import numpy as np
+from tqdm import tqdm
 
 bbox_idx, class_idx, score_idx = 0, 1, 2
 x1_idx, y1_idx, x2_idx, y2_idx = 1, 0, 3, 2
@@ -43,7 +44,7 @@ for file in os.listdir(video_dir):
     if file.endswith(".mp4"):
         video_list.append(file)
 
-for video_name in video_list:
+for video_name in tqdm(video_list):
     data = np.load(os.path.join(video_dir, 'detectron_large_mask_rcnn_1_' + video_name[:-4] + '.npy'), allow_pickle=True)[()]
     # data = [data[0]]
 
@@ -54,12 +55,12 @@ for video_name in video_list:
         curr_dict["frame"] = idx
         curr_dict["bboxes"] = []
         for jdx in range(len(data[idx][bbox_idx])):
-            curr_bbox = {"x1": str(data[idx][bbox_idx][jdx][x1_idx]),
-                            "y1": str(data[idx][bbox_idx][jdx][y1_idx]),
-                            "x2": str(data[idx][bbox_idx][jdx][x2_idx]),
-                            "y2": str(data[idx][bbox_idx][jdx][y2_idx]),
+            curr_bbox = {"x1": (data[idx][bbox_idx][jdx][x1_idx]),
+                            "y1": (data[idx][bbox_idx][jdx][y1_idx]),
+                            "x2": (data[idx][bbox_idx][jdx][x2_idx]),
+                            "y2": (data[idx][bbox_idx][jdx][y2_idx]),
                             "class": str(id2name[data[idx][class_idx][jdx] - 1]),
-                            "score": str(data[idx][score_idx][jdx])
+                            "score": (data[idx][score_idx][jdx])
                             }
             curr_dict["bboxes"].append(curr_bbox)
         json_obj.append(curr_dict)
