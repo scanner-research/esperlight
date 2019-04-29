@@ -13,7 +13,7 @@ import time
 import cv2
 import random
 
-from tqdm import tqdm
+from tqdm import tqdm_notebook
 from collections import defaultdict
 
 from tensorflow.contrib import slim
@@ -84,12 +84,14 @@ with tf.Graph().as_default():
     with tf.Session() as sess:
         init_fn(sess)
 
-        for video_name in tqdm(video_list):
+        for video_name in tqdm_notebook(video_list):
             data = np.load(os.path.join(video_dir, 'detectron_large_mask_rcnn_1_' + video_name[:-4] + '.npy'), allow_pickle=True)[()]
             vid_obj = cv2.VideoCapture(os.path.join(video_dir, video_name)) 
+            vid_width = vid_obj.get(3)
+            vid_height = vid_obj.get(4)
             
             json_obj = []
-            for idx in range(len(data)):
+            for idx in tqdm_notebook(range(len(data))):
                 success, img = vid_obj.read() 
 
                 curr_dict = {}
@@ -104,10 +106,10 @@ with tf.Graph().as_default():
                                     "class": str(id2name[data[idx][class_idx][jdx] - 1]),
                                     "score": float(data[idx][score_idx][jdx])
                                     }
-                    x1 = int(curr_bbox['x1'])
-                    x2 = int(curr_bbox['x2'])
-                    y1 = int(curr_bbox['y1'])
-                    y2 = int(curr_bbox['y2'])
+                    x1 = int(curr_bbox['x1'] * vid_width)
+                    x2 = int(curr_bbox['x2'] * vid_width)
+                    y1 = int(curr_bbox['y1'] * vid_height)
+                    y2 = int(curr_bbox['y2'] * vid_height)
 
                     if y2-y1 >= 8 and x2-x1 >= 8:
                         patch = img[y1:y2, x1:x2, :]
