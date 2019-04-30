@@ -80,8 +80,9 @@ with tf.Graph().as_default():
 
     init_fn = slim.assign_from_checkpoint_fn('workspace/resnet_v2_101.ckpt',
                             slim.get_model_variables('resnet_v2'))
-
-    with tf.Session() as sess:
+    
+    gpu_options = tf.GPUOptions(visible_device_list="0")
+    with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         init_fn(sess)
 
         for video_name in tqdm_notebook(video_list):
