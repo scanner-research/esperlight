@@ -6,19 +6,16 @@ import os
 import sys
 import json
 import glob
-
-import numpy as np
-import tensorflow as tf
 import time
-import cv2
 import random
 
 from tqdm import tqdm_notebook
 from collections import defaultdict
 
+import cv2
+import numpy as np
+import tensorflow as tf
 from tensorflow.contrib import slim
-sys.path.append(os.path.realpath('workspace/models/research/slim/'))
-
 from nets import resnet_v2
 from preprocessing import inception_preprocessing
 from datasets import imagenet
@@ -57,7 +54,6 @@ id2name = {0: u'person', 1: u'bicycle', 2: u'car', 3: u'motorcycle', 4: u'airpla
           125: u'grass-merged', 126: u'dirt-merged', 127: u'paper-merged', 128: u'food-other-merged',
 129: u'building-other-merged', 130: u'rock-merged', 131: u'wall-other-merged', 132: u'rug-merged'}
 
-
 video_dir = "workspace/bdd_maskrcnn_dense/"
 video_list = []
 for file in os.listdir(video_dir):
@@ -80,7 +76,7 @@ with tf.Graph().as_default():
 
     init_fn = slim.assign_from_checkpoint_fn('workspace/resnet_v2_101.ckpt',
                             slim.get_model_variables('resnet_v2'))
-    
+
     gpu_options = tf.GPUOptions(visible_device_list="0")
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         init_fn(sess)
@@ -90,15 +86,12 @@ with tf.Graph().as_default():
             vid_obj = cv2.VideoCapture(os.path.join(video_dir, video_name)) 
             vid_width = vid_obj.get(3)
             vid_height = vid_obj.get(4)
-            
+
             json_obj = []
             for idx in tqdm_notebook(range(len(data))):
                 success, img = vid_obj.read() 
 
-                curr_dict = {}
-                curr_dict["video"] = video_name
-                curr_dict["frame"] = idx
-                curr_dict["bboxes"] = []
+                curr_dict = {"video": video_name, "frame": idx, "bboxes": []}
                 for jdx in range(len(data[idx][bbox_idx])):
                     curr_bbox = {"x1": float(data[idx][bbox_idx][jdx][x1_idx]),
                                     "y1": float(data[idx][bbox_idx][jdx][y1_idx]),
@@ -118,10 +111,10 @@ with tf.Graph().as_default():
                         curr_bbox['bbox_id'] = bbox_unique_id
                         bbox_unique_id += 1
                         embeddings_list.append(embedding[0, 0, 0, :])
-
                     curr_dict["bboxes"].append(curr_bbox)
+
                 json_obj.append(curr_dict)
-                
+
             json_file = open(os.path.join(video_dir, video_name[:-4] + ".json"), "w")
             json_file.write(json.dumps(json_obj))
             json_file.close()
