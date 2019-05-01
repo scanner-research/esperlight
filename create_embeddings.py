@@ -8,6 +8,7 @@ import json
 import glob
 import time
 import random
+import argparse
 
 from tqdm import tqdm_notebook
 from collections import defaultdict
@@ -20,9 +21,7 @@ from nets import resnet_v2
 from preprocessing import inception_preprocessing
 from datasets import imagenet
 
-bbox_idx, class_idx, score_idx = 0, 1, 2
-x1_idx, y1_idx, x2_idx, y2_idx = 1, 0, 3, 2
-
+## Parameters from the Mask R-CNN detectron
 id2name = {0: u'person', 1: u'bicycle', 2: u'car', 3: u'motorcycle', 4: u'airplane',
           5: u'bus', 6: u'train', 7: u'truck', 8: u'boat', 9: u'traffic light',
           10: u'fire hydrant', 11: u'stop sign', 12: u'parking meter', 13: u'bench',
@@ -52,47 +51,84 @@ id2name = {0: u'person', 1: u'bicycle', 2: u'car', 3: u'motorcycle', 4: u'airpla
           119: u'sky-other-merged', 120: u'cabinet-merged', 121: u'table-merged',
           122: u'floor-other-merged', 123: u'pavement-merged', 124: u'mountain-merged',
           125: u'grass-merged', 126: u'dirt-merged', 127: u'paper-merged', 128: u'food-other-merged',
-129: u'building-other-merged', 130: u'rock-merged', 131: u'wall-other-merged', 132: u'rug-merged'}
+          129: u'building-other-merged', 130: u'rock-merged', 131: u'wall-other-merged', 132: u'rug-merged'}
 
-video_dir = "workspace/bdd_maskrcnn_dense/"
-video_list = []
-for file in os.listdir(video_dir):
-    if file.endswith(".mp4"):
-        video_list.append(file)
+bbox_idx, class_idx, score_idx = 0, 1, 2
+y1_idx, x1_idx, y2_idx, x2_idx = 0, 1, 2, 3
 
-embeddings_list = []
-bbox_unique_id = 0
+## Arguments parser
+parser = argparse.ArgumentParser(description=\
+  'Generate JSON (containing bbox info + id) and embedding binary from video and Mask R-CNN dump.')
+parser.add_argument('video', help='Input video file')
+parser.add_argument('maskrcnn_dump', help='Input Mask R-CNN detectron file (.npy)')
+parser.add_argument('-e', '--embedding', default=None, \
+  help='Output binary file containing embeddings (default videoname_embeddings.npy)')
+parser.add_argument('-j', '--json', default=None, \
+  help='Output JSON file containing bounding box information (default videoname_bboxes.json)')
+parser.add_argument('-x', '--minx', default=8, type=int, \
+  help='Minimum width of the bounding boxes to be considered (default 8)')
+parser.add_argument('-y', '--miny', default=8, type=int, help=\
+  'Minimum height of the bounding boxes to be considered (default 8)')
+parser.add_argument('-s', '--score', default=0.0, type=float, \
+  help='Minimum score of the bounding boxes to be considered (default 0.000)')
+parser.add_argument('-g', '--gpuid', default=0, type=int, \
+  help='Claim this gpu id for tensorflow (default 0)')
 
-image_size = 299
-names = imagenet.create_readable_names_for_imagenet_labels()
+args = parser.parse_args()
 
+## Set appropriate paths
+if args.embedding is None:
+    embedding_path = video_name[:-4] + "_embeddings.npy"
+else:
+    embedding_path = args.embedding
+if args.json is None:
+    json_path = video_name[:-4] + "_bboxes.json"
+else:
+    json_path = args.json
+
+## Compute the json and embeddings
 with tf.Graph().as_default():
+    # set up the resnet pretrained model
+    image_size = 299
+    names = imagenet.create_readable_names_for_imagenet_labels()
     image = tf.placeholder(tf.uint8, (None, None, 3))
     processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
     processed_image = tf.expand_dims(processed_image, 0)
+    
     with slim.arg_scope(resnet_v2.resnet_arg_scope()):
         logits, _ = resnet_v2.resnet_v2_101(processed_image, 1001, is_training=False)
         pool5 = tf.get_default_graph().get_tensor_by_name("resnet_v2_101/pool5:0")
-
+    
     init_fn = slim.assign_from_checkpoint_fn('workspace/resnet_v2_101.ckpt',
                             slim.get_model_variables('resnet_v2'))
 
-    gpu_options = tf.GPUOptions(visible_device_list="0")
+    # set gpu id
+    gpu_options = tf.GPUOptions(visible_device_list=args.gpuid)
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         init_fn(sess)
 
-        for video_name in tqdm_notebook(video_list):
-            data = np.load(os.path.join(video_dir, 'detectron_large_mask_rcnn_1_' + video_name[:-4] + '.npy'), allow_pickle=True)[()]
-            vid_obj = cv2.VideoCapture(os.path.join(video_dir, video_name)) 
-            vid_width = vid_obj.get(3)
-            vid_height = vid_obj.get(4)
+        # load the bbox data
+        data = np.load(args.maskrcnn_dump, allow_pickle=True)[()]
+        # load the video and set width and height
+        vid_obj = cv2.VideoCapture(args.video) 
+        vid_width = vid_obj.get(3)
+        vid_height = vid_obj.get(4)
 
-            json_obj = []
-            for idx in tqdm_notebook(range(len(data))):
-                success, img = vid_obj.read() 
+        json_obj = []
+        embeddings_list = []
+        bbox_unique_id = 0
 
-                curr_dict = {"video": video_name, "frame": idx, "bboxes": []}
-                for jdx in range(len(data[idx][bbox_idx])):
+        # for all the frames, each element of data contains info of 1 frame
+        for idx in tqdm_notebook(range(len(data))):
+            success, img = vid_obj.read() 
+
+            curr_dict = {"video": video_name, "frame": idx, "bboxes": []}
+
+            # for all the bounding boxes
+            for jdx in range(len(data[idx][bbox_idx])):
+
+                # considering only boxes that pass the given score threshold
+                if float(data[idx][score_idx][jdx]) > args.score:
                     curr_bbox = {"x1": float(data[idx][bbox_idx][jdx][x1_idx]),
                                     "y1": float(data[idx][bbox_idx][jdx][y1_idx]),
                                     "x2": float(data[idx][bbox_idx][jdx][x2_idx]),
@@ -100,23 +136,29 @@ with tf.Graph().as_default():
                                     "class": str(id2name[data[idx][class_idx][jdx] - 1]),
                                     "score": float(data[idx][score_idx][jdx])
                                     }
+
+                    # scale the coordinates since the mask-rcnn dumpled is normalized
                     x1 = int(curr_bbox['x1'] * vid_width)
                     x2 = int(curr_bbox['x2'] * vid_width)
                     y1 = int(curr_bbox['y1'] * vid_height)
                     y2 = int(curr_bbox['y2'] * vid_height)
 
-                    if y2-y1 >= 8 and x2-x1 >= 8:
+                    # consider only the boxes that pass the size constraints given
+                    if y2-y1 >= args.miny and x2-x1 >= args.minx:
                         patch = img[y1:y2, x1:x2, :]
-                        scaled_img, logit_vals, embedding = sess.run([processed_image, logits, pool5], feed_dict={image: patch})
+                        scaled_img, logit_vals, embedding = sess.run([processed_image, logits, pool5], \
+                                                                    feed_dict={image: patch})
                         curr_bbox['bbox_id'] = bbox_unique_id
                         bbox_unique_id += 1
                         embeddings_list.append(embedding[0, 0, 0, :])
-                    curr_dict["bboxes"].append(curr_bbox)
+                        curr_dict["bboxes"].append(curr_bbox)
 
-                json_obj.append(curr_dict)
+            json_obj.append(curr_dict)
 
-            json_file = open(os.path.join(video_dir, video_name[:-4] + ".json"), "w")
-            json_file.write(json.dumps(json_obj))
-            json_file.close()
-
-np.save("bdd_all_embeddings.npy", embeddings_list)
+        # dump the json
+        json_file = open(json_path, "w")
+        json_file.write(json.dumps(json_obj))
+        json_file.close()
+ 
+        # dump the embeddings
+        np.save(embedding_path, embeddings_list)
