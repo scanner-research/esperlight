@@ -10,13 +10,14 @@ import time
 import random
 import argparse
 
-from tqdm import tqdm_notebook
+from tqdm import tqdm, tqdm_notebook
 from collections import defaultdict
 
 import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import slim
+sys.path.append(os.path.realpath('workspace/models/research/slim/'))
 from nets import resnet_v2
 from preprocessing import inception_preprocessing
 from datasets import imagenet
@@ -62,9 +63,9 @@ parser = argparse.ArgumentParser(description=\
 parser.add_argument('video', help='Input video file')
 parser.add_argument('maskrcnn_dump', help='Input Mask R-CNN detectron file (.npy)')
 parser.add_argument('-e', '--embedding', default=None, \
-  help='Output binary file containing embeddings (default videoname_embeddings.npy)')
+  help='Output binary file containing embeddings (default videoname_param_embeddings.npy)')
 parser.add_argument('-j', '--json', default=None, \
-  help='Output JSON file containing bounding box information (default videoname_bboxes.json)')
+  help='Output JSON file containing bounding box information (default videoname_param_bboxes.json)')
 parser.add_argument('-x', '--minx', default=8, type=int, \
   help='Minimum width of the bounding boxes to be considered (default 8)')
 parser.add_argument('-y', '--miny', default=8, type=int, help=\
@@ -77,12 +78,13 @@ parser.add_argument('-g', '--gpuid', default=0, type=int, \
 args = parser.parse_args()
 
 ## Set appropriate paths
+param_str = "_" + str(args.minx) + "_" + str(args.miny) + "_" + str(args.score) + "_"
 if args.embedding is None:
-    embedding_path = video_name[:-4] + "_embeddings.npy"
+    embedding_path = args.video[:-4] + param_str + "embeddings.npy"
 else:
     embedding_path = args.embedding
 if args.json is None:
-    json_path = video_name[:-4] + "_bboxes.json"
+    json_path = args.video[:-4] + param_str +  "_bboxes.json"
 else:
     json_path = args.json
 
@@ -103,7 +105,7 @@ with tf.Graph().as_default():
                             slim.get_model_variables('resnet_v2'))
 
     # set gpu id
-    gpu_options = tf.GPUOptions(visible_device_list=args.gpuid)
+    gpu_options = tf.GPUOptions(visible_device_list=str(args.gpuid))
     with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         init_fn(sess)
 
@@ -119,10 +121,10 @@ with tf.Graph().as_default():
         bbox_unique_id = 0
 
         # for all the frames, each element of data contains info of 1 frame
-        for idx in tqdm_notebook(range(len(data))):
+        for idx in tqdm(range(len(data))):
             success, img = vid_obj.read() 
 
-            curr_dict = {"video": video_name, "frame": idx, "bboxes": []}
+            curr_dict = {"video": args.video, "frame": idx, "bboxes": []}
 
             # for all the bounding boxes
             for jdx in range(len(data[idx][bbox_idx])):
@@ -144,7 +146,7 @@ with tf.Graph().as_default():
                     y2 = int(curr_bbox['y2'] * vid_height)
 
                     # consider only the boxes that pass the size constraints given
-                    if y2-y1 >= args.miny and x2-x1 >= args.minx:
+                    if y2 - y1 >= args.miny and x2 - x1 >= args.minx:
                         patch = img[y1:y2, x1:x2, :]
                         scaled_img, logit_vals, embedding = sess.run([processed_image, logits, pool5], \
                                                                     feed_dict={image: patch})
