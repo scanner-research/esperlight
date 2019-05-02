@@ -16,7 +16,7 @@ As an example, running [`create_video_metadata.py`](view_collection.ipynb) on th
 
 // TODO
 
-# Generating bounding box json and embeddings from mask-rcnn output
+# Generating bbox embeddings from mask-rcnn output
 
 The next step is to use the mask-rcnn dump to generate the bounding box and the embeddings information Esperlight expects. `create_embeddings.py` takes in video, mask-rcnn output and thresholding parameters for the bounding boxes to be considered. The thresholding parameters that you can control are bounding box width `--minx`, height `--miny` and score `--score`. The script depends on Tensorflow's [`slim`](https://github.com/tensorflow/models/tree/master/research/slim) package and the pretrained [`ResNet`](http://download.tensorflow.org/models/resnet_v2_101_2017_04_14.tar.gz) model. Please download them and set the appropriate path in `tensorflow_config.ini`. You can also pass GPU id to `create_embeddings.py` to run on a specific GPU (defaults to 0)
 
