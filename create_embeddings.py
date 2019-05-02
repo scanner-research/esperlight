@@ -17,7 +17,14 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import slim
-sys.path.append(os.path.realpath('workspace/models/research/slim/'))
+
+from ConfigParser import SafeConfigParser
+config = SafeConfigParser()
+config.read('tensorflow_config.ini')
+slim_dir = config.get('main', 'slim_dir')
+pretrain_ckpt = config.get('main', 'pretrain_ckpt')
+sys.path.append(os.path.realpath(slim_dir))
+
 from nets import resnet_v2
 from preprocessing import inception_preprocessing
 from datasets import imagenet
@@ -101,7 +108,7 @@ with tf.Graph().as_default():
         logits, _ = resnet_v2.resnet_v2_101(processed_image, 1001, is_training=False)
         pool5 = tf.get_default_graph().get_tensor_by_name("resnet_v2_101/pool5:0")
     
-    init_fn = slim.assign_from_checkpoint_fn('workspace/resnet_v2_101.ckpt',
+    init_fn = slim.assign_from_checkpoint_fn(pretrain_ckpt,
                             slim.get_model_variables('resnet_v2'))
 
     # set gpu id
