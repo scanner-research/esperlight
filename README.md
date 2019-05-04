@@ -35,7 +35,9 @@ To achieve this, we start up a server and run different queries against it. `sta
 Say you have the server running on `ip_address:port`, the server now has two functions you can access. 
 
 * Requesting `ip_address:port/status` gets you the status of the server along with the list of videos and parameters it is currently using. 
-* Requesting `ip_address:port/knn` with a video name (`video_name`), bounding box id (`bbox_id`) and number of nearest neighbors (`k`) returns a list of `k` video name and bounding box id tuples (`video_name`, `bbox_id`) closest to the query. A sample client is available here [`examples/run_knn_client.py`](https://github.com/scanner-research/esperlight/blob/master/run_knn_client.py). You can start the server the following command:
+* Requesting `ip_address:port/knn` with a video name (`video_name`), bounding box id (`bbox_id`) and number of nearest neighbors (`k`) returns a list of `k` video name and bounding box id tuples (`video_name`, `bbox_id`) closest to the query. A sample client is available here [`examples/run_knn_client.py`](https://github.com/scanner-research/esperlight/blob/master/examples/run_knn_client.py). 
+
+You can start the server the following command:
 
 ```
     export FLASK_APP=start_knn_server.py 
