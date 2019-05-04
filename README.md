@@ -28,11 +28,19 @@ The next step is to use the mask-rcnn dump to generate the bounding box and the 
 
 # Starting a knn server
 
-The embeddings generated in the previous step are useful in finding similarity across bounding boxes. With these embeddings now generated, you can now run a knn search to find other boxes most similar to a query bounding box. To achieve this, we start up a server and run different queries against it. `start_knn_server.py` achieves this functionality. It depends on the [Flask](http://flask.pocoo.org/) framework and is backed by [Faiss](https://github.com/facebookresearch/faiss) for efficient similarity search. Please set the appropriate path of the directory containing videos and embeddings, and also set other parameters in `knn_server_config.ini`. Say you have the server running on `ip_address:port`, the server now has two functions you can access. Requesting `ip_address:port/status` gets you the status of the server along with the list of videos and parameters it is currently using. Requesting `ip_address:port/knn` with a video name (`video_name`), bounding box id (`bbox_id`) and number of nearest neighbors (`k`) returns a list of `k` video name and bounding box id tuples (`video_name`, `bbox_id`) closest to the query. A sample client is available here [`run_knn_client`](https://github.com/scanner-research/esperlight/blob/master/run_knn_client.py). You can start the server the following command:
+The embeddings generated in the previous step are useful in finding similarity across bounding boxes. With these embeddings now generated, you can run a knn search to find other boxes most similar to a query bounding box. 
 
+To achieve this, we start up a server and run different queries against it. `start_knn_server.py` achieves this functionality. It depends on the [Flask](http://flask.pocoo.org/) framework and is backed by [Faiss](https://github.com/facebookresearch/faiss) for efficient similarity search. Please set the appropriate path of the directory containing videos and embeddings, and also set other parameters in `knn_server_config.ini`. 
+
+Say you have the server running on `ip_address:port`, the server now has two functions you can access. 
+
+* Requesting `ip_address:port/status` gets you the status of the server along with the list of videos and parameters it is currently using. 
+* Requesting `ip_address:port/knn` with a video name (`video_name`), bounding box id (`bbox_id`) and number of nearest neighbors (`k`) returns a list of `k` video name and bounding box id tuples (`video_name`, `bbox_id`) closest to the query. A sample client is available here [`examples/run_knn_client.py`](https://github.com/scanner-research/esperlight/blob/master/run_knn_client.py). You can start the server the following command:
+
+```
     export FLASK_APP=start_knn_server.py 
     flask run --host=0.0.0.0 --port=8321
-
+```
 
 # Visualizing a collection of videos
 
