@@ -47,6 +47,9 @@ d = len(xb[0])
 index = faiss.IndexFlatL2(d)
 index.add(xb)
 
+## Check the status of the server by sending a POST request to /status
+## Returns list of videos along with the parameters if success
+## Else returns error 
 @app.route('/status', methods = ['POST'])
 def setup_knn():
     global video_dict, params
@@ -61,14 +64,12 @@ def setup_knn():
 
     return jsonify(result)
 
-def convert_idx_to_vidinfo(idx, video_dict):
-    curr_sum = 0
-    for x in video_dict:
-        if idx < curr_sum + x[1]:
-            return (x[0], idx - curr_sum)
-        else:
-            curr_sum = x[1] + curr_sum
+## Knn search here works by creating a mega array got by concatenating bbox 
+## embeddings from all videos. Every request bbox is converted to an index
+## to the mega array, knn-search is run on this mega array and the returned
+## indices are converted back to video_name & bbox_id.
 
+## Convert video_name, bbox_id to an index in the concatenation of all bboxes
 def convert_vidinfo_to_idx(video_name, bbox_id):
     curr_sum = 0
     for x in video_dict:
@@ -77,7 +78,16 @@ def convert_vidinfo_to_idx(video_name, bbox_id):
         else:
             curr_sum = curr_sum + x[1]
 
+## Convert index in mega array back to video_name & bbox_id
+def convert_idx_to_vidinfo(idx, video_dict):
+    curr_sum = 0
+    for x in video_dict:
+        if idx < curr_sum + x[1]:
+            return (x[0], idx - curr_sum)
+        else:
+            curr_sum = x[1] + curr_sum
 
+## Run the knn search
 @app.route('/knn', methods = ['POST'])
 def find_knn():
     global xb, video_dict, index
