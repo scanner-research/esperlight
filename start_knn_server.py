@@ -32,7 +32,7 @@ for file in os.listdir(video_dir):
 ## Prepare data for knn-search
 video_dict = []
 first = True
-for video in video_list[:3]:
+for video in video_list:
     curr_data = np.load(os.path.join(video_dir, video[:-4] + '_' + str(minx) + '_' + 
         str(miny) + '_' + str(score) + '_' + 'embeddings.npy'), allow_pickle=True)
     video_dict.append((video, len(curr_data)))
@@ -102,7 +102,6 @@ def find_knn():
         xq = np.asarray([xb[query_idx]])
 
         D, I = index.search(xq, k)
-        print(I)
         bboxes = []
         for idx in I[0]:
             bboxes.append(convert_idx_to_vidinfo(idx, video_dict))
